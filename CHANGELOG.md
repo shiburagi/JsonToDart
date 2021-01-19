@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.0.5] - 2021-01-20
+-  handle constructor code for null/undefined/empty object in json
+
 ## [0.0.4] - 2021-01-20
 - Fix null/undefined/empty object in json
 

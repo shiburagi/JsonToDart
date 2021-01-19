@@ -82,7 +82,7 @@ class JsonToDart {
 class ${className} {
 ${parameters.join("\n")}
 
-${this.indent(1)}${className}({${constructorInit.join(", ")}});
+${this.indent(1)}${className}(${constructorInit.length ? `{${constructorInit.join(", ")}}` : ""});
 
 ${this.indent(1)}${className}.fromJson(Map<String, dynamic> json) {
 ${fromJsonCode.join("\n")}
