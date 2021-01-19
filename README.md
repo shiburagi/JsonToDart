@@ -4,14 +4,14 @@
 
 ### Method 1
 1) Copy JSON
-2) Open ```Command Pallete```, and find ```JsonToDart: Convert JSON From Clipboard```
+2) Open ```Command Pallete```, and find ```JsonToDart: Convert JSON from Clipboard```
 3) Fill the box, select the option
 4) Done
 
 ### Method 2
 1) Copy JSON
 2) Right click on folder or dart file
-3) Click  ```Convert JSON From Clipboard Here```
+3) Click  ```Convert JSON from Clipboard Here```
 4) Fill the box, select the option
 6) Done
 

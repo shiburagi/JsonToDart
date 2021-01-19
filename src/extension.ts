@@ -77,6 +77,7 @@ async function convertToDart(folder?: string, file?: string) {
 		vscode.window.showInformationMessage(`Converting done...`);
 	} catch (e) {
 		vscode.window.showErrorMessage(e.toString());
+		console.log(e);
 	}
 }
 

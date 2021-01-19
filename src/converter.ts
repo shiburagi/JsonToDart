@@ -64,18 +64,19 @@ class JsonToDart {
         const fromJsonCode = new Array();
         const toJsonCode = new Array();
         const constructorInit = new Array();
-
-        Object.entries(json).forEach(entry => {
-            const key = entry[0];
-            const value = entry[1];
-            const typeObj = this.findDataType(key, value);
-            const type = typeObj.type;
-            const paramName = camelcase(key);
-            parameters.push(this.toCode(1, type, paramName));
-            this.addFromJsonCode(key, typeObj, fromJsonCode);
-            this.addToJsonCode(key, typeObj, toJsonCode);
-            constructorInit.push(`this.${paramName}`);
-        });
+        if (json) {
+            Object.entries(json).forEach(entry => {
+                const key = entry[0];
+                const value = entry[1];
+                const typeObj = this.findDataType(key, value);
+                const type = typeObj.type;
+                const paramName = camelcase(key);
+                parameters.push(this.toCode(1, type, paramName));
+                this.addFromJsonCode(key, typeObj, fromJsonCode);
+                this.addToJsonCode(key, typeObj, toJsonCode);
+                constructorInit.push(`this.${paramName}`);
+            });
+        }
 
         const code = `
 class ${className} {

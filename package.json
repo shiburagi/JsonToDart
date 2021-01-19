@@ -2,7 +2,7 @@
 	"name": "jsontodart",
 	"displayName": "Json To Dart",
 	"description": "Plain object to Dart Object",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"publisher": "MuhammadNorzariman",
 	"keywords": [
 		"json",
@@ -43,15 +43,15 @@
 		"commands": [
 			{
 				"command": "jsontodart.convertFromClipboard",
-				"title": "JsonToDart: Convert JSON From Clipboard"
+				"title": "JsonToDart: Convert JSON from Clipboard"
 			},
 			{
 				"command": "jsontodart.convertFromClipboardToFile",
-				"title": "Convert JSON From Clipboard Here"
+				"title": "Convert JSON from Clipboard Here"
 			},
 			{
 				"command": "jsontodart.convertFromClipboardToFolder",
-				"title": "Convert JSON From Clipboard Here"
+				"title": "Convert JSON from Clipboard Here"
 			}
 		]
 	},

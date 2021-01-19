@@ -1,9 +1,13 @@
 # Change Log
 
-All notable changes to the "jsontodart" extension will be documented in this file.
+## [0.0.4] - 2021-01-20
+- Fix null/undefined/empty object in json
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## [0.0.3] - 2021-01-19
+- Generate constructor code
 
-## [Unreleased]
+## [0.0.2] - 2021-01-19
+- Right-click menu item : Convert JSON from clipboard to file/folder
 
+## [0.0.1] - 2021-01-18
 - Initial release
