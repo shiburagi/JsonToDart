@@ -1,65 +1,105 @@
-# jsontodart README
+# jsontodart 
 
-This is the README for your extension "jsontodart". After writing up a brief description, we recommend including the following sections.
+## How to use
 
-## Features
+### Method 1
+1) Copy JSON
+2) Open ```Command Pallete```, and find ```JsonToDart: Convert From Clipboard```
+3) Fill the box, select the option
+4) Done
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### Method 2
+1) Copy JSON
+2) Right click on folder or dart file
+3) Fill the box, select the option
+4) Done
 
-For example if there is an image subfolder under your extension project workspace:
+## Sample
+```json
+{
+    "data": {
+        "id": 2,
+        "email": "janet.weaver@reqres.in",
+        "first_name": "Janet",
+        "last_name": "Weaver",
+        "avatar": "https://reqres.in/img/faces/2-image.jpg"
+    },
+    "support": {
+        "url": "https://reqres.in/#support-heading",
+        "text": "To keep ReqRes free, contributions towards server costs are appreciated!"
+    }
+}
+```
 
-\!\[feature X\]\(images/feature-x.png\)
+Output:
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+```dart
+class User {
+  Data data;
+  Support support;
 
-## Requirements
+  User.fromJson(Map<String, dynamic> json) {
+    this.data = json["data"] == null ? null : Data.fromJson(json["data"]);
+    this.support =
+        json["support"] == null ? null : Support.fromJson(json["support"]);
+  }
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.data != null) data["data"] = this.data.toJson();
+    if (this.support != null) data["support"] = this.support.toJson();
+    return data;
+  }
+}
 
-## Extension Settings
+class Support {
+  String url;
+  String text;
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+  Support.fromJson(Map<String, dynamic> json) {
+    this.url = json["url"];
+    this.text = json["text"];
+  }
 
-For example:
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data["url"] = this.url;
+    data["text"] = this.text;
+    return data;
+  }
+}
 
-This extension contributes the following settings:
+class Data {
+  int id;
+  String email;
+  String firstName;
+  String lastName;
+  String avatar;
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+  Data.fromJson(Map<String, dynamic> json) {
+    this.id = json["id"];
+    this.email = json["email"];
+    this.firstName = json["first_name"];
+    this.lastName = json["last_name"];
+    this.avatar = json["avatar"];
+  }
 
-## Known Issues
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data["id"] = this.id;
+    data["email"] = this.email;
+    data["first_name"] = this.firstName;
+    data["last_name"] = this.lastName;
+    data["avatar"] = this.avatar;
+    return data;
+  }
+}
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+```
 
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+## Customize
+```yaml
+jsonToDart:
+  outputFolder: lib/models #default: lib/
+  typeChecking: true  #default: undefined (Select from picker)
+```

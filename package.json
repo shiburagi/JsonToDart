@@ -1,8 +1,18 @@
 {
 	"name": "jsontodart",
-	"displayName": "jsonToDart",
+	"displayName": "Json To Dart",
 	"description": "Plain object to Dart Object",
-	"version": "0.0.1",
+	"version": "0.0.2",
+	"publisher": "MuhammadNorzariman",
+	"keywords": [
+		"json",
+		"dart",
+		"plain object"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/shiburagi/JsonToDart.git"
+	},
 	"engines": {
 		"vscode": "^1.52.0"
 	},
@@ -10,14 +20,38 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:jsontodart.convertFromClipboard"
+		"onCommand:jsontodart.convertFromClipboard",
+		"onCommand:jsontodart.convertFromClipboardToFile",
+		"onCommand:jsontodart.convertFromClipboardToFolder"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
+		"menus": {
+			"explorer/context": [
+				{
+					"when": "resourceLangId == dart",
+					"command": "jsontodart.convertFromClipboardToFile",
+					"group": "jsontodart@1"
+				},
+				{
+					"when": "explorerResourceIsFolder",
+					"command": "jsontodart.convertFromClipboardToFolder",
+					"group": "jsontodart@1"
+				}
+			]
+		},
 		"commands": [
 			{
 				"command": "jsontodart.convertFromClipboard",
-				"title": "JsonToDart: Convert From Clipboard"
+				"title": "JsonToDart: Convert JSON From Clipboard"
+			},
+			{
+				"command": "jsontodart.convertFromClipboardToFile",
+				"title": "Convert JSON From Clipboard Here"
+			},
+			{
+				"command": "jsontodart.convertFromClipboardToFolder",
+				"title": "Convert JSON From Clipboard Here"
 			}
 		]
 	},

@@ -88,7 +88,6 @@ ${this.indent(2)}final Map<String, dynamic> data = new Map<String, dynamic>();
 ${toJsonCode.join("\n")}
 ${this.indent(2)}return data;
 ${this.indent(1)}}
-
 }`;
 
         this.addClass(className, code);
