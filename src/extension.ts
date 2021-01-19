@@ -72,7 +72,7 @@ async function convertToDart(folder?: string, file?: string) {
 		const data = await vscode.env.clipboard.readText();
 		const obj = JSON.parse(data);
 
-		const code = new JsonToDart(typeCheck).parse(className, obj).join("\n\n");
+		const code = new JsonToDart(typeCheck).parse(className, obj).join("\n");
 		const file = outputFileSync(filePath, code);
 		vscode.window.showInformationMessage(`Converting done...`);
 	} catch (e) {

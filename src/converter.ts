@@ -63,6 +63,7 @@ class JsonToDart {
         const parameters = new Array();
         const fromJsonCode = new Array();
         const toJsonCode = new Array();
+        const constructorInit = new Array();
 
         Object.entries(json).forEach(entry => {
             const key = entry[0];
@@ -73,11 +74,14 @@ class JsonToDart {
             parameters.push(this.toCode(1, type, paramName));
             this.addFromJsonCode(key, typeObj, fromJsonCode);
             this.addToJsonCode(key, typeObj, toJsonCode);
+            constructorInit.push(`this.${paramName}`);
         });
 
         const code = `
-class ${className}{
+class ${className} {
 ${parameters.join("\n")}
+
+${this.indent(1)}${className}({${constructorInit.join(", ")}});
 
 ${this.indent(1)}${className}.fromJson(Map<String, dynamic> json) {
 ${fromJsonCode.join("\n")}
