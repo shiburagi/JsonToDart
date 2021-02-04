@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.0.8] - 2021-02-05
+- Fixed Window path issue
+
 ## [0.0.7] - 2021-01-20
 - Fixed List issue
 - Right-click on Editor : Convert JSON from clipboard to file
