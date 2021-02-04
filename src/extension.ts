@@ -61,8 +61,9 @@ async function convertToDart(folder?: string, file?: string) {
 	} else {
 		fileName = await filenameHandler(`${snakeCase(className)}.dart`);
 	}
+
 	try {
-		const filePath = folder ? join(folder, fileName) : join(
+		const filePath = folder ? join(...folder.split(/[\\/]/g), fileName) : join(
 			...(workspacePath),
 			pubspecTree?.jsonToDart?.outputFolder ?? "lib",
 			...paths, fileName);
@@ -77,7 +78,6 @@ async function convertToDart(folder?: string, file?: string) {
 		vscode.window.showInformationMessage(`Converting done...`);
 	} catch (e) {
 		vscode.window.showErrorMessage(e.toString());
-		console.log(e);
 	}
 }
 
