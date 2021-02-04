@@ -114,7 +114,7 @@ ${this.indent(1)}}
     r = (type: TypeObj): String => {
 
         if (type.typeRef !== undefined) {
-            return `(e)=>e?.map(${this.r(type.typeRef)})?.toList() ?? []`;
+            return `(e)=>e==null?[]:(e as List).map(${this.r(type.typeRef)}).toList()`;
         }
         return `(e)=>${type.type}.fromJson(e)`;
     };
@@ -152,7 +152,7 @@ ${this.indent(1)}}
                     paramName, "=", `json["${key}"]?.cast<${type}>() ?? []`));
             } else {
                 fromJsonCode.push(this.toCode(indentTab,
-                    paramName, "=", `json["${key}"]?.map(${this.r(typeObj.typeRef)}) ?? []`));
+                    paramName, "=", `json["${key}"]==null?[]:(json["${key}"] as List).map(${this.r(typeObj.typeRef)}).toList()`));
             }
         }
         else {

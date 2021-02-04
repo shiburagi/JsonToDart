@@ -1,7 +1,14 @@
 # Change Log
 
+## [0.0.7] - 2021-01-20
+- Fixed List issue
+- Right-click on Editor : Convert JSON from clipboard to file
+
+## [0.0.6] - 2021-01-20
+- Fixed List issue
+
 ## [0.0.5] - 2021-01-20
--  handle constructor code for null/undefined/empty object in json
+- handle constructor code for null/undefined/empty object in json
 
 ## [0.0.4] - 2021-01-20
 - Fix null/undefined/empty object in json
