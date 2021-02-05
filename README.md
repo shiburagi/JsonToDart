@@ -15,6 +15,16 @@
 4) Fill the box, select the option
 6) Done
 
+### More Configuration
+To handle **null** value on generated model, you can define/change data type on pubspec.yaml
+
+Example:
+```yaml
+jsonToDart:
+  nullValueDataType: String #default: dynamic
+```
+
+
 ## Sample
 ```json
 {
@@ -35,7 +45,6 @@
 Output:
 
 ```dart
-
 class User {
   Data data;
   Support support;
@@ -44,15 +53,14 @@ class User {
 
   User.fromJson(Map<String, dynamic> json) {
     this.data = json["data"] == null ? null : Data.fromJson(json["data"]);
-    this.support = json["support"] == null ? null : Support.fromJson(json["support"]);
+    this.support =
+        json["support"] == null ? null : Support.fromJson(json["support"]);
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    if(this.data != null)
-      data["data"] = this.data.toJson();
-    if(this.support != null)
-      data["support"] = this.support.toJson();
+    if (this.data != null) data["data"] = this.data.toJson();
+    if (this.support != null) data["support"] = this.support.toJson();
     return data;
   }
 }
@@ -103,6 +111,7 @@ class Data {
     return data;
   }
 }
+
 ```
 
 ## Customize
@@ -110,4 +119,5 @@ class Data {
 jsonToDart:
   outputFolder: lib/models #default: lib/
   typeChecking: true  #default: undefined (Select from picker)
+  nullValueDataType: String #default: dynamic
 ```

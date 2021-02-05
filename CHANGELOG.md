@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.0.10] - 2021-02-05
+- Handle data type for null value
+
+## [0.0.9] - 2021-02-05
+- Handle json in array format
+
 ## [0.0.8] - 2021-02-05
 - Fixed Window path issue
 

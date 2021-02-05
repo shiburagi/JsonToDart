@@ -7,11 +7,13 @@ class JsonToDart {
     classModels: Array<String> = new Array();
     indentText: String;
     shouldCheckType: boolean;
-    constructor(shouldCheckType?: boolean) {
+    nullValueDataType: String;
+    constructor(shouldCheckType?: boolean, nullValueDataType?: String) {
 
         const { tabSize } = vscode.workspace.getConfiguration("editor", { languageId: "dart" });
         this.indentText = " ".repeat(tabSize);
         this.shouldCheckType = shouldCheckType ?? false;
+        this.nullValueDataType = nullValueDataType ?? "dynamic";
     }
 
     addClass(className: String, classModel: String) {
@@ -23,7 +25,10 @@ class JsonToDart {
         let type = "dynamic" as String;
         const typeObj = new TypeObj();
 
-        if (Number.isInteger(value)) {
+        if (value === null || value === undefined) {
+            type = this.nullValueDataType;
+            typeObj.isPrimitive = true;
+        } else if (Number.isInteger(value)) {
             type = "int";
             typeObj.isPrimitive = true;
         } else if ((typeof value) === "number") {
@@ -65,6 +70,9 @@ class JsonToDart {
         const toJsonCode = new Array();
         const constructorInit = new Array();
         if (json) {
+            if (Array.isArray(json) && json.length > 0) {
+                json = json[0];
+            }
             Object.entries(json).forEach(entry => {
                 const key = entry[0];
                 const value = entry[1];

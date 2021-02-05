@@ -37,6 +37,10 @@ async function convertToDart(folder?: string, file?: string) {
 	const workspacePath = vscode.workspace.workspaceFolders?.map(e => e.uri.path) ?? [];
 	const pubspec = await vscode.workspace.openTextDocument(join(...workspacePath, "pubspec.yaml"));
 	const pubspecTree = parse(pubspec.getText());
+
+	const jsonToDartConfig = pubspecTree?.jsonToDart ?? {
+		outputFolder: "lib"
+	};
 	// Display a message box to the user
 	const value = await vscode.window.showInputBox({
 		placeHolder: file || folder ? "Class Name" : "package.Class Name\n",
@@ -46,7 +50,7 @@ async function convertToDart(folder?: string, file?: string) {
 		return;
 	}
 
-	const typeCheck = pubspecTree?.jsonToDart?.typeChecking ??
+	const typeCheck = jsonToDartConfig.typeChecking ??
 		(await vscode.window.showQuickPick(["Yes", "No"], {
 			placeHolder: "Need type checking?"
 		}) === "Yes");
@@ -65,7 +69,7 @@ async function convertToDart(folder?: string, file?: string) {
 	try {
 		const filePath = folder ? join(folder.startsWith("/") ? folder.substring(1) : folder, fileName) : join(
 			...(workspacePath),
-			pubspecTree?.jsonToDart?.outputFolder ?? "lib",
+			jsonToDartConfig.outputFolder,
 			...paths, fileName);
 		vscode.window.showInformationMessage(`Writing ${filePath}`);
 
@@ -73,7 +77,7 @@ async function convertToDart(folder?: string, file?: string) {
 		const data = await vscode.env.clipboard.readText();
 		const obj = JSON.parse(data);
 
-		const code = new JsonToDart(typeCheck).parse(className, obj).join("\n");
+		const code = new JsonToDart(typeCheck, jsonToDartConfig.nullValueDataType).parse(className, obj).join("\n");
 		const file = outputFileSync(filePath, code);
 		vscode.window.showInformationMessage(`Converting done...`);
 	} catch (e) {
