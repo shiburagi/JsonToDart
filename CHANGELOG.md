@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.1.0] - 2021-02-26
+- Null-safety options
+
 ## [0.0.10] - 2021-02-05
 - Handle data type for null value
 

@@ -120,4 +120,5 @@ jsonToDart:
   outputFolder: lib/models #default: lib/
   typeChecking: true  #default: undefined (Select from picker)
   nullValueDataType: String #default: dynamic
+  nullSafety: true #default: false
 ```
