@@ -7,13 +7,15 @@ class JsonToDart {
     classModels: Array<String> = new Array();
     indentText: String;
     shouldCheckType: boolean;
+    nullSafety: boolean;
     nullValueDataType: String;
-    constructor(shouldCheckType?: boolean, nullValueDataType?: String) {
-
-        const { tabSize } = vscode.workspace.getConfiguration("editor", { languageId: "dart" });
+    handlerSymbol: String;
+    constructor(tabSize: number, shouldCheckType?: boolean, nullValueDataType?: String, nullSafety?: boolean) {
         this.indentText = " ".repeat(tabSize);
         this.shouldCheckType = shouldCheckType ?? false;
         this.nullValueDataType = nullValueDataType ?? "dynamic";
+        this.nullSafety = nullSafety ?? true;
+        this.handlerSymbol = nullSafety ? "?" : "";
     }
 
     addClass(className: String, classModel: String) {
@@ -77,7 +79,7 @@ class JsonToDart {
                 const key = entry[0];
                 const value = entry[1];
                 const typeObj = this.findDataType(key, value);
-                const type = typeObj.type;
+                const type = `${typeObj.type}${this.handlerSymbol}`;
                 const paramName = camelcase(key);
                 parameters.push(this.toCode(1, type, paramName));
                 this.addFromJsonCode(key, typeObj, fromJsonCode);
@@ -175,7 +177,7 @@ ${this.indent(1)}}
         if (typeObj.isObject) {
             fromJsonCode.push(this.toCondition(2, `if(${paramName} != null)`));
             fromJsonCode.push(this.toCode(3,
-                paramCode, "=", `${paramName}.toJson()`));
+                paramCode, "=", `${paramName}${this.handlerSymbol}.toJson()`));
         }
         else if (typeObj.isArray) {
             fromJsonCode.push(this.toCondition(2, `if(${paramName} != null)`));
@@ -184,7 +186,8 @@ ${this.indent(1)}}
                     paramCode, "=", paramName));
             } else {
                 fromJsonCode.push(this.toCode(3,
-                    paramCode, "=", `${paramName}.map(${this.p(typeObj.typeRef)}).toList()`));
+                    paramCode, "=",
+                    `${paramName}${this.handlerSymbol}.map(${this.p(typeObj.typeRef)}).toList()`));
             }
         }
         else {

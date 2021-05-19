@@ -76,8 +76,12 @@ async function convertToDart(folder?: string, file?: string) {
 
 		const data = await vscode.env.clipboard.readText();
 		const obj = JSON.parse(data);
+		const nullSafety = jsonToDartConfig.nullSafety ?? false;
+		const nullValueDataType = jsonToDartConfig.nullValueDataType;
+        const { tabSize } = vscode.workspace.getConfiguration("editor", { languageId: "dart" });
 
-		const code = new JsonToDart(typeCheck, jsonToDartConfig.nullValueDataType).parse(className, obj).join("\n");
+		const code = new JsonToDart(tabSize, typeCheck, nullValueDataType, nullSafety)
+			.parse(className, obj).join("\n");
 		const file = outputFileSync(filePath, code);
 		vscode.window.showInformationMessage(`Converting done...`);
 	} catch (e) {
