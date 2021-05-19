@@ -1,5 +1,3 @@
-import * as vscode from 'vscode';
-
 const camelcase = require('camelcase');
 
 class JsonToDart {
