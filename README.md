@@ -1,5 +1,7 @@
 # jsontodart 
 
+Demo : https://jsontodart.zariman.dev/
+
 ## How to use
 
 ### Method 1
@@ -121,4 +123,5 @@ jsonToDart:
   typeChecking: true  #default: undefined (Select from picker)
   nullValueDataType: String #default: dynamic
   nullSafety: true #default: false
+  copyWithMethod: true #default: false
 ```
