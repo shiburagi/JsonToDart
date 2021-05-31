@@ -124,4 +124,5 @@ jsonToDart:
   nullValueDataType: String #default: dynamic
   nullSafety: true #default: false
   copyWithMethod: true #default: false
+  mergeArrayApproach: false #default: true
 ```
