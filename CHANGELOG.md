@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.1.3] - 2021-05-21
+- fix primitive list
+- merging list of object to single object instead of use first object as model reference
+
+## [0.1.2] - 2021-05-21
+- copyWith method
+
 ## [0.1.0] - 2021-02-26
 - Null-safety options
 

@@ -7,6 +7,7 @@ class JsonToDart {
     shouldCheckType: boolean;
     nullSafety: boolean;
     includeCopyWitMethod: boolean = false;
+    mergeArrayApproach: boolean = true;
     nullValueDataType: String;
     handlerSymbol: String;
     constructor(tabSize: number, shouldCheckType?: boolean, nullValueDataType?: String, nullSafety?: boolean) {
@@ -19,6 +20,9 @@ class JsonToDart {
 
     setIncludeCopyWitMethod(b: boolean) {
         this.includeCopyWitMethod = b;
+    }
+    setMergeArrayApproach(b: boolean) {
+        this.mergeArrayApproach = b;
     }
 
     addClass(className: String, classModel: String) {
@@ -66,7 +70,10 @@ class JsonToDart {
         typeObj.type = type;
         return typeObj;
     }
-
+    removeNull = (obj: any): any =>
+        Object.keys(obj)
+            .filter(key => obj[key] !== null)
+            .reduce((res, key) => ({ ...res, [key]: obj[key] }), {});
 
     parse(className: String, json: any): Array<Result> {
 
@@ -81,7 +88,12 @@ class JsonToDart {
         const copyWithAssign: Array<String> = [];
         if (json) {
             if (Array.isArray(json) && json.length > 0) {
-                json = json[0];
+                json = this.mergeArrayApproach ? json.reduce((p, c) => {
+                    return {
+                        ...p,
+                        ...this.removeNull(c),
+                    };
+                }, {}) : json[0];
             }
             Object.entries(json).forEach(entry => {
                 const key = entry[0];
@@ -110,9 +122,9 @@ ${this.indent(1)}}) => ${className}(${copyWithAssign.length ? `{
 ${copyWithAssign.join(",\n")},
 ${this.indent(1)}}` : ""});` : '';
 
-        const parametersCode = parameters.length?`
+        const parametersCode = parameters.length ? `
 ${parameters.join("\n")}
-`:"";
+`: "";
         const code = `
 class ${className} {${parametersCode}
 ${this.indent(1)}${className}(${constructorInit.length ? `{${constructorInit.join(", ")}}` : ""});
@@ -188,7 +200,7 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
                     paramName, "=", `json["${key}"] ?? []`));
             } else if (typeObj.isPrimitive) {
                 fromJsonCode.push(this.toCode(indentTab,
-                    paramName, "=", `json["${key}"]?.map((e) => e as ${typeObj.typeRef.type}) ?? []`));
+                    paramName, "=", `json["${key}"]?.map<${typeObj.typeRef.type}>((e) => e as ${typeObj.typeRef.type}).tolist() ?? []`));
             } else {
                 fromJsonCode.push(this.toCode(indentTab,
                     paramName, "=", `json["${key}"]==null?[]:(json["${key}"] as List).map(${this.r(typeObj.typeRef)}).toList()`));
