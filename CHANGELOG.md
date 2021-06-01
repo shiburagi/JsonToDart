@@ -2,7 +2,6 @@
 
 ## [0.1.4] - 2021-06-01
 - fix primitive list
-- merging list of object to single object instead of use first object as model reference
 
 ## [0.1.3] - 2021-05-30
 - fix primitive list
