@@ -200,10 +200,10 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
                     paramName, "=", `json["${key}"] ?? []`));
             } else if (typeObj.isPrimitive) {
                 fromJsonCode.push(this.toCode(indentTab,
-                    paramName, "=", `json["${key}"]?.map<${typeObj.typeRef.type}>((e) => e as ${typeObj.typeRef.type}).tolist() ?? []`));
+                    paramName, "=", `json["${key}"]==null ? null : List<${typeObj.typeRef.type}>.from(json["${key}"])`));
             } else {
                 fromJsonCode.push(this.toCode(indentTab,
-                    paramName, "=", `json["${key}"]==null?[]:(json["${key}"] as List).map(${this.r(typeObj.typeRef)}).toList()`));
+                    paramName, "=", `json["${key}"]==null ? null : (json["${key}"] as List).map(${this.r(typeObj.typeRef)}).toList()`));
             }
         }
         else {
