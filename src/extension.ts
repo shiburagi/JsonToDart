@@ -67,7 +67,7 @@ async function convertToDart(folder?: string, file?: string) {
 	}
 
 	try {
-		const filePath = folder ? join(folder.startsWith("/") ? folder.substring(1) : folder, fileName) : join(
+		const filePath = folder ? join(folder.startsWith("/") || folder.startsWith("\\") ? folder.substring(1) : folder, fileName) : join(
 			...(workspacePath),
 			jsonToDartConfig.outputFolder,
 			...paths, fileName);

@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.1.5] - 2021-06-01
+- Fixed Window path issue
+
 ## [0.1.4] - 2021-06-01
 - fix primitive list
 
