@@ -167,18 +167,18 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
     r = (type: TypeObj): String => {
 
         if (type.typeRef !== undefined) {
-            return `(e)=>e == null?[]:(e as List).map(${this.r(type.typeRef)}).toList()`;
+            return `(e) => e == null?[]:(e as List).map(${this.r(type.typeRef)}).toList()`;
         }
-        return `(e)=>${type.type}.fromJson(e)`;
+        return `(e) => ${type.type}.fromJson(e)`;
     };
 
 
     p = (type: TypeObj): String => {
 
         if (type.typeRef !== undefined) {
-            return `(e)=>e?.map(${this.p(type.typeRef)})?.toList() ?? []`;
+            return `(e) => e?.map(${this.p(type.typeRef)})?.toList() ?? []`;
         }
-        return `(e)=>e.toJson()`;
+        return `(e) => e.toJson()`;
     };
 
     addFromJsonCode(key: String, typeObj: TypeObj, fromJsonCode: Array<String>) {
