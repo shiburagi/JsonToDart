@@ -25,6 +25,7 @@ class JsonToDart {
         this.mergeArrayApproach = b;
     }
 
+
     addClass(className: String, classModel: String) {
         this.classModels.splice(0, 0, {
             code: classModel,
@@ -75,6 +76,10 @@ class JsonToDart {
             .filter(key => obj[key] !== null)
             .reduce((res, key) => ({ ...res, [key]: obj[key] }), {});
 
+    formatType(type: String, handlerSymbol: String) {
+        if (type === "dynamic") { return type; }
+        return `${type}${handlerSymbol}`;
+    }
     parse(className: String, json: any): Array<Result> {
 
         className = this.toClassName(className);
@@ -99,7 +104,7 @@ class JsonToDart {
                 const key = entry[0];
                 const value = entry[1];
                 const typeObj = this.findDataType(key, value);
-                const type = `${typeObj.type}${this.handlerSymbol}`;
+                const type = this.formatType(typeObj.type, this.handlerSymbol);
                 const paramName = camelcase(key);
                 parameters.push(this.toCode(1, type, paramName));
                 this.addFromJsonCode(key, typeObj, fromJsonCode);
@@ -134,7 +139,7 @@ ${fromJsonCode.join("\n")}
 ${this.indent(1)}}
 
 ${this.indent(1)}Map<String, dynamic> toJson() {
-${this.indent(2)}final Map<String, dynamic> data = new Map<String, dynamic>();
+${this.indent(2)}final Map<String, dynamic> data = <String, dynamic>{};
 ${toJsonCode.join("\n")}
 ${this.indent(2)}return data;
 ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
@@ -162,7 +167,7 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
     r = (type: TypeObj): String => {
 
         if (type.typeRef !== undefined) {
-            return `(e)=>e==null?[]:(e as List).map(${this.r(type.typeRef)}).toList()`;
+            return `(e)=>e == null?[]:(e as List).map(${this.r(type.typeRef)}).toList()`;
         }
         return `(e)=>${type.type}.fromJson(e)`;
     };
@@ -183,11 +188,11 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
         if (this.shouldCheckType && type !== "dynamic") {
             indentTab = 3;
             if (typeObj.isObject) {
-                fromJsonCode.push(this.toCondition(2, `if(json["${key}"] is Map)`));
+                fromJsonCode.push(this.toCondition(2, `if(json["${key}"] is Map) {`));
             } else if (typeObj.isArray) {
-                fromJsonCode.push(this.toCondition(2, `if(json["${key}"] is List)`));
+                fromJsonCode.push(this.toCondition(2, `if(json["${key}"] is List) {`));
             } else {
-                fromJsonCode.push(this.toCondition(2, `if(json["${key}"] is ${type})`));
+                fromJsonCode.push(this.toCondition(2, `if(json["${key}"] is ${type}) {`));
             }
         }
         if (typeObj.isObject) {
@@ -200,14 +205,18 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
                     paramName, "=", `json["${key}"] ?? []`));
             } else if (typeObj.isPrimitive) {
                 fromJsonCode.push(this.toCode(indentTab,
-                    paramName, "=", `json["${key}"]==null ? null : List<${typeObj.typeRef.type}>.from(json["${key}"])`));
+                    paramName, "=", `json["${key}"] == null ? null : List<${typeObj.typeRef.type}>.from(json["${key}"])`));
             } else {
                 fromJsonCode.push(this.toCode(indentTab,
-                    paramName, "=", `json["${key}"]==null ? null : (json["${key}"] as List).map(${this.r(typeObj.typeRef)}).toList()`));
+                    paramName, "=", `json["${key}"] == null ? null : (json["${key}"] as List).map(${this.r(typeObj.typeRef)}).toList()`));
             }
         }
         else {
             fromJsonCode.push(this.toCode(indentTab, paramName, "=", `json["${key}"]`));
+        }
+
+        if (indentTab === 3) {
+            fromJsonCode.push(this.toCondition(2, `}`));
         }
     }
 
@@ -215,12 +224,13 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
         const paramName = `this.${camelcase(key)}`;
         const paramCode = `data["${key}"]`;
         if (typeObj.isObject) {
-            fromJsonCode.push(this.toCondition(2, `if(${paramName} != null)`));
+            fromJsonCode.push(this.toCondition(2, `if(${paramName} != null) {`));
             fromJsonCode.push(this.toCode(3,
                 paramCode, "=", `${paramName}${this.handlerSymbol}.toJson()`));
+            fromJsonCode.push(this.toCondition(2, `}`));
         }
         else if (typeObj.isArray) {
-            fromJsonCode.push(this.toCondition(2, `if(${paramName} != null)`));
+            fromJsonCode.push(this.toCondition(2, `if(${paramName} != null) {`));
             if (typeObj.isPrimitive || typeObj.typeRef === undefined) {
                 fromJsonCode.push(this.toCode(3,
                     paramCode, "=", paramName));
@@ -229,6 +239,7 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
                     paramCode, "=",
                     `${paramName}${this.handlerSymbol}.map(${this.p(typeObj.typeRef)}).toList()`));
             }
+            fromJsonCode.push(this.toCondition(2, `}`));
         }
         else {
             fromJsonCode.push(this.toCode(2,
@@ -261,7 +272,6 @@ class TypeObj {
     isObject: boolean = false;
     isArray: boolean = false;
     isPrimitive: boolean = false;
-
 }
 
 export type Result = {
