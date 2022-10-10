@@ -7,6 +7,7 @@ class JsonToDart {
     shouldCheckType: boolean;
     nullSafety: boolean;
     includeCopyWitMethod: boolean = false;
+    includeFromListMethod: boolean = false;
     mergeArrayApproach: boolean = true;
     nullValueDataType: String;
     handlerSymbol: String;
@@ -20,6 +21,9 @@ class JsonToDart {
 
     setIncludeCopyWitMethod(b: boolean) {
         this.includeCopyWitMethod = b;
+    }
+    setIncludeFromListWitMethod(b: boolean) {
+        this.includeFromListMethod = b;
     }
     setMergeArrayApproach(b: boolean) {
         this.mergeArrayApproach = b;
@@ -112,11 +116,17 @@ class JsonToDart {
                 if (this.includeCopyWitMethod) {
                     parametersForMethod.push(this.toMethodParams(2, type, paramName));
                     copyWithAssign.push(`${this.indent(2)}${paramName}: ${paramName} ?? this.${paramName}`);
-
                 }
                 constructorInit.push(`this.${paramName}`);
             });
         }
+
+        const fromListCode = this.includeFromListMethod ?
+            `
+${this.indent(1)}static List<${className}> fromList(List<Map<String, dynamic>> list) {
+${this.indent(2)}return list.map((map) => ${className}.fromJson(map)).toList();
+${this.indent(1)}}
+` : "";
 
         const copyWithCode = this.includeCopyWitMethod ?
             `
@@ -137,11 +147,11 @@ ${this.indent(1)}${className}(${constructorInit.length ? `{${constructorInit.joi
 ${this.indent(1)}${className}.fromJson(Map<String, dynamic> json) {
 ${fromJsonCode.join("\n")}
 ${this.indent(1)}}
-
+${fromListCode}
 ${this.indent(1)}Map<String, dynamic> toJson() {
-${this.indent(2)}final Map<String, dynamic> data = <String, dynamic>{};
+${this.indent(2)}final Map<String, dynamic> _data = <String, dynamic>{};
 ${toJsonCode.join("\n")}
-${this.indent(2)}return data;
+${this.indent(2)}return _data;
 ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
 }`;
 
@@ -183,7 +193,7 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
 
     addFromJsonCode(key: String, typeObj: TypeObj, fromJsonCode: Array<String>) {
         const type = typeObj.type;
-        const paramName = `this.${camelcase(key)}`;
+        const paramName = `${camelcase(key)}`;
         let indentTab = 2;
         if (this.shouldCheckType && type !== "dynamic") {
             indentTab = 3;
@@ -221,8 +231,8 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
     }
 
     addToJsonCode(key: String, typeObj: TypeObj, fromJsonCode: Array<String>) {
-        const paramName = `this.${camelcase(key)}`;
-        const paramCode = `data["${key}"]`;
+        const paramName = `${camelcase(key)}`;
+        const paramCode = `_data["${key}"]`;
         if (typeObj.isObject) {
             fromJsonCode.push(this.toCondition(2, `if(${paramName} != null) {`));
             fromJsonCode.push(this.toCode(3,

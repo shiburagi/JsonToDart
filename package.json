@@ -2,7 +2,7 @@
 	"name": "jsontodart",
 	"displayName": "Json To Dart",
 	"description": "Plain object to Dart Object",
-	"version": "0.1.8",
+	"version": "0.2.1",
 	"publisher": "MuhammadNorzariman",
 	"keywords": [
 		"json",
