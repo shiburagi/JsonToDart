@@ -31,6 +31,15 @@ export function activate(context: vscode.ExtensionContext) {
 // this method is called when your extension is deactivated
 export function deactivate() { }
 
+class JsonToDartConfig {
+	outputFolder: String = "lib";
+	typeChecking: Boolean | undefined = undefined;
+	nullValueDataType: String = "dynamic";
+	nullSafety: Boolean = false;
+	copyWithMethod: Boolean = false;
+	mergeArrayApproach: Boolean = true;
+	checkNumberAsNum: Boolean = false;
+}
 
 async function convertToDart(folder?: string, file?: string) {
 	// The code you place here will be executed every time your command is executed
@@ -49,11 +58,16 @@ async function convertToDart(folder?: string, file?: string) {
 	if (!value || value === "") {
 		return;
 	}
-
 	const typeCheck = jsonToDartConfig.typeChecking ??
 		(await vscode.window.showQuickPick(["Yes", "No"], {
 			placeHolder: "Need type checking?"
 		}) === "Yes");
+	let useNum = jsonToDartConfig.checkNumberAsNum ?? false;
+	if (useNum === "ask") {
+		useNum = (await vscode.window.showQuickPick(["Yes", "No"], {
+			placeHolder: "Using number(num) checker on int & double value?"
+		}) === "Yes");
+	}
 
 	const packageAndClass = value?.toString() ?? "";
 
@@ -76,7 +90,7 @@ async function convertToDart(folder?: string, file?: string) {
 
 		const data = await vscode.env.clipboard.readText();
 		const obj = JSON.parse(data);
-		const nullSafety = jsonToDartConfig.nullSafety ?? false;
+		const nullSafety = jsonToDartConfig.nullSafety ?? true;
 		const mergeArrayApproach = jsonToDartConfig.mergeArrayApproach ?? false;
 		const copyWithMethod = jsonToDartConfig.copyWithMethod ?? false;
 		const nullValueDataType = jsonToDartConfig.nullValueDataType;
@@ -84,11 +98,12 @@ async function convertToDart(folder?: string, file?: string) {
 		const converter = new JsonToDart(tabSize, typeCheck, nullValueDataType, nullSafety);
 		converter.setIncludeCopyWitMethod(copyWithMethod);
 		converter.setMergeArrayApproach(mergeArrayApproach);
+		converter.setUseNum(useNum);
 		const code = converter.parse(className, obj).map(r => r.code).join("\n");
 		const file = outputFileSync(filePath, code);
 		vscode.window.showInformationMessage(`Converting done...`);
 	} catch (e) {
-		vscode.window.showErrorMessage(e.toString());
+		vscode.window.showErrorMessage(`${e}`);
 	}
 }
 

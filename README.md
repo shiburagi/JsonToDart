@@ -124,7 +124,13 @@ jsonToDart:
   outputFolder: lib/models #default: lib/
   typeChecking: true  #default: undefined (Select from picker)
   nullValueDataType: String #default: dynamic
-  nullSafety: true #default: false
+  nullSafety: false #default: true
   copyWithMethod: true #default: false
   mergeArrayApproach: false #default: true
+  
+   #default: false, 
+   #if true, value = (json[key] as num).toInt() or value = (_data[key] as num).toDouble()
+   #if false, value = json[key]
+   #if "ask", selection popup will apear before parse json
+  checkNumberAsNum: true # true, false, "ask"
 ```

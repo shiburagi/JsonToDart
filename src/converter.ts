@@ -9,6 +9,7 @@ class JsonToDart {
     includeCopyWitMethod: boolean = false;
     includeFromListMethod: boolean = false;
     mergeArrayApproach: boolean = true;
+    useNum: boolean = false;
     nullValueDataType: String;
     handlerSymbol: String;
     constructor(tabSize: number, shouldCheckType?: boolean, nullValueDataType?: String, nullSafety?: boolean) {
@@ -28,6 +29,9 @@ class JsonToDart {
     setMergeArrayApproach(b: boolean) {
         this.mergeArrayApproach = b;
     }
+    setUseNum(b: boolean) {
+        this.useNum = b;
+    }
 
 
     addClass(className: String, classModel: String) {
@@ -46,9 +50,11 @@ class JsonToDart {
         } else if (Number.isInteger(value)) {
             type = "int";
             typeObj.isPrimitive = true;
+            typeObj.isNum = true;
         } else if ((typeof value) === "number") {
             type = "double";
             typeObj.isPrimitive = true;
+            typeObj.isNum = true;
         } else if ((typeof value) === "string") {
             type = "String";
             typeObj.isPrimitive = true;
@@ -133,9 +139,9 @@ ${this.indent(1)}}
 
 ${this.indent(1)}${className} copyWith({
 ${parametersForMethod.join("\n")}
-${this.indent(1)}}) => ${className}(${copyWithAssign.length ? `{
+${this.indent(1)}}) => ${className}(${copyWithAssign.length ? `
 ${copyWithAssign.join(",\n")},
-${this.indent(1)}}` : ""});` : '';
+${this.indent(1)}` : ""});` : '';
 
         const parametersCode = parameters.length ? `
 ${parameters.join("\n")}
@@ -201,7 +207,10 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
                 fromJsonCode.push(this.toCondition(2, `if(json["${key}"] is Map) {`));
             } else if (typeObj.isArray) {
                 fromJsonCode.push(this.toCondition(2, `if(json["${key}"] is List) {`));
-            } else {
+            } else if (this.useNum && typeObj.isNum) {
+                fromJsonCode.push(this.toCondition(2, `if(json["${key}"] is num) {`));
+            }
+            else {
                 fromJsonCode.push(this.toCondition(2, `if(json["${key}"] is ${type}) {`));
             }
         }
@@ -222,7 +231,13 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
             }
         }
         else {
-            fromJsonCode.push(this.toCode(indentTab, paramName, "=", `json["${key}"]`));
+            if (this.useNum && typeObj.isNum) {
+                const methodName = camelcase(type, { pascalCase: true })
+                fromJsonCode.push(this.toCode(indentTab, paramName, "=", `(json["${key}"] as num).to${methodName}()`));
+            }
+            else {
+                fromJsonCode.push(this.toCode(indentTab, paramName, "=", `json["${key}"]`));
+            }
         }
 
         if (indentTab === 3) {
@@ -282,6 +297,7 @@ class TypeObj {
     isObject: boolean = false;
     isArray: boolean = false;
     isPrimitive: boolean = false;
+    isNum: boolean = false;
 }
 
 export type Result = {
