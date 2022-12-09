@@ -118,7 +118,7 @@ class Data {
 
 ```
 
-## Customize
+## Customize (pubspec.yaml)
 ```yaml
 jsonToDart:
   outputFolder: lib/models #default: lib/
