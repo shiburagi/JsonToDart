@@ -2,7 +2,7 @@
 	"name": "jsontodart",
 	"displayName": "Json To Dart",
 	"description": "Plain object to Dart Object",
-	"version": "0.2.2",
+	"version": "0.3.0",
 	"publisher": "MuhammadNorzariman",
 	"keywords": [
 		"json",
@@ -21,11 +21,7 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [
-		"onCommand:jsontodart.convertFromClipboard",
-		"onCommand:jsontodart.convertFromClipboardToFile",
-		"onCommand:jsontodart.convertFromClipboardToFolder"
-	],
+	"activationEvents": [],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"menus": {
@@ -95,5 +91,8 @@
 		"vscode-test": "^1.4.1",
 		"webpack": "^5.10.0",
 		"webpack-cli": "^4.2.0"
+	},
+	"dependencies": {
+		"lodash": "^4.17.21"
 	}
 }

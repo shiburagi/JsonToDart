@@ -1,6 +1,6 @@
-const camelcase = require('camelcase');
+import camelcase from 'camelcase';
 
-class JsonToDart {
+abstract class JsonToDart {
     classNames: Array<String> = [];
     classModels: Array<Result> = [];
     indentText: String;
@@ -12,12 +12,14 @@ class JsonToDart {
     useNum: boolean = false;
     nullValueDataType: String;
     handlerSymbol: String;
+    packageImport: String;
     constructor(tabSize: number, shouldCheckType?: boolean, nullValueDataType?: String, nullSafety?: boolean) {
         this.indentText = " ".repeat(tabSize);
         this.shouldCheckType = shouldCheckType ?? false;
         this.nullValueDataType = nullValueDataType ?? "dynamic";
         this.nullSafety = nullSafety ?? true;
         this.handlerSymbol = nullSafety ? "?" : "";
+        this.packageImport = "";
     }
 
     setIncludeCopyWitMethod(b: boolean) {
@@ -32,12 +34,16 @@ class JsonToDart {
     setUseNum(b: boolean) {
         this.useNum = b;
     }
+    setPackage(s: String) {
+        this.packageImport = s;
+    }
 
 
-    addClass(className: String, classModel: String) {
+    addClass(className: String, classModel: String, imports: String | undefined) {
         this.classModels.splice(0, 0, {
             code: classModel,
             className: className,
+            imports: imports
         });
     }
 
@@ -95,7 +101,7 @@ class JsonToDart {
         className = this.toClassName(className);
         this.classNames.push(className);
 
-        const parameters: Array<String> = [];
+        const parameters: Array<ParameterData> = [];
         const parametersForMethod: Array<String> = [];
         const fromJsonCode: Array<String> = [];
         const toJsonCode: Array<String> = [];
@@ -116,7 +122,12 @@ class JsonToDart {
                 const typeObj = this.findDataType(key, value);
                 const type = this.formatType(typeObj.type, this.handlerSymbol);
                 const paramName = camelcase(key);
-                parameters.push(this.toCode(1, type, paramName));
+                const paramAnnotations = this.generateFieldAnnotation(key, paramName, type);
+                parameters.push({
+                    code: this.toCode(1, type, paramName),
+                    annotations: paramAnnotations
+
+                });
                 this.addFromJsonCode(key, typeObj, fromJsonCode);
                 this.addToJsonCode(key, typeObj, toJsonCode);
                 if (this.includeCopyWitMethod) {
@@ -130,7 +141,7 @@ class JsonToDart {
         const fromListCode = this.includeFromListMethod ?
             `
 ${this.indent(1)}static List<${className}> fromList(List<Map<String, dynamic>> list) {
-${this.indent(2)}return list.map((map) => ${className}.fromJson(map)).toList();
+${this.indent(2)}return list.map(${className}.fromJson).toList();
 ${this.indent(1)}}
 ` : "";
 
@@ -144,24 +155,19 @@ ${copyWithAssign.join(",\n")},
 ${this.indent(1)}` : ""});` : '';
 
         const parametersCode = parameters.length ? `
-${parameters.join("\n")}
+${parameters.map(e => `${e.annotations ? this.indent(1).toString() + e.annotations + "\n" : ""}${e.code}`).join("\n")}
 `: "";
-        const code = `
-class ${className} {${parametersCode}
-${this.indent(1)}${className}(${constructorInit.length ? `{${constructorInit.join(", ")}}` : ""});
 
-${this.indent(1)}${className}.fromJson(Map<String, dynamic> json) {
-${fromJsonCode.join("\n")}
-${this.indent(1)}}
-${fromListCode}
-${this.indent(1)}Map<String, dynamic> toJson() {
-${this.indent(2)}final Map<String, dynamic> _data = <String, dynamic>{};
-${toJsonCode.join("\n")}
-${this.indent(2)}return _data;
-${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
+        const classAnnotation = this.generateClassAnnotation();
+        const imports = this.generateImport(className);
+        const code = `
+${classAnnotation ? classAnnotation + "\n" : ""}class ${className} {${parametersCode}
+${this.indent(1)}${className}(${constructorInit.length ? `{${constructorInit.join(", ")}}` : ""});
+${this.generateFromJsonCode(className, fromJsonCode)}
+${fromListCode}${this.generateToJsonCode(className, toJsonCode)}${this.includeCopyWitMethod ? copyWithCode : ""}
 }`;
 
-        this.addClass(className, code);
+        this.addClass(className, code, imports);
 
         return this.classModels;
 
@@ -169,7 +175,7 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
 
 
     toClassName(name: String): String {
-        name = camelcase(name, { pascalCase: true });
+        name = camelcase(name.toString(), { pascalCase: true });
         let i = 0;
         let className = name;
         while (this.classNames.includes(className)) {
@@ -199,7 +205,7 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
 
     addFromJsonCode(key: String, typeObj: TypeObj, fromJsonCode: Array<String>) {
         const type = typeObj.type;
-        const paramName = `${camelcase(key)}`;
+        const paramName = `${camelcase(key.toString())}`;
         let indentTab = 2;
         if (this.shouldCheckType && type !== "dynamic") {
             indentTab = 3;
@@ -232,7 +238,7 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
         }
         else {
             if (this.useNum && typeObj.isNum) {
-                const methodName = camelcase(type, { pascalCase: true })
+                const methodName = camelcase(type.toString(), { pascalCase: true });
                 fromJsonCode.push(this.toCode(indentTab, paramName, "=", `(json["${key}"] as num).to${methodName}()`));
             }
             else {
@@ -246,7 +252,7 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
     }
 
     addToJsonCode(key: String, typeObj: TypeObj, fromJsonCode: Array<String>) {
-        const paramName = `${camelcase(key)}`;
+        const paramName = `${camelcase(key.toString())}`;
         const paramCode = `_data["${key}"]`;
         if (typeObj.isObject) {
             fromJsonCode.push(this.toCondition(2, `if(${paramName} != null) {`));
@@ -287,7 +293,36 @@ ${this.indent(1)}}${this.includeCopyWitMethod ? copyWithCode : ""}
     toCondition(count: number, ...text: Array<String>): String {
         return `${this.indent(count)}${text.join(" ")}`;
     }
+
+    generateClassAnnotation(): String | undefined {
+        return undefined;
+    }
+
+    generateFieldAnnotation(key: String, fieldName: String, dataType: String): String | undefined {
+        return undefined;
+    }
+
+    generateImport(className: String): String | undefined {
+        return undefined;
+    }
+
+    generateFromJsonCode(className: String, fromJsonCode: Array<String>): String {
+        return `
+${this.indent(1)}${className}.fromJson(Map<String, dynamic> json) {
+${fromJsonCode.join("\n")}
+${this.indent(1)}}`;
+    }
+    generateToJsonCode(className: String, toJsonCode: Array<String>): String {
+        return `
+${this.indent(1)}Map<String, dynamic> toJson() {
+${this.indent(2)}final Map<String, dynamic> _data = <String, dynamic>{};
+${toJsonCode.join("\n")}
+${this.indent(2)}return _data;
+${this.indent(1)}}`;
+    }
 }
+
+
 
 
 class TypeObj {
@@ -302,7 +337,13 @@ class TypeObj {
 
 export type Result = {
     code: String;
+    imports: String | undefined;
     className: String;
+};
+
+export type ParameterData = {
+    code: String;
+    annotations: String | undefined;
 };
 
 

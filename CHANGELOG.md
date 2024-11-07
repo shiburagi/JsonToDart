@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.3.0] - 2024-11-06
+- Add json_serializable engine
+
 ## [0.1.5] - 2021-06-01
 - Fixed Window path issue
 
