@@ -5,3 +5,4 @@ node_modules
 .yarnrc
 yarn.lock
 package-lock.json
+yarn.lock
