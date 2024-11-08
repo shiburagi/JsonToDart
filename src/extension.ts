@@ -3,9 +3,10 @@
 import { outputFileSync } from 'fs-extra';
 import { join } from 'path';
 import * as vscode from 'vscode';
-import JsonToDart from './converter';
 import { snakeCase } from 'lodash';
 import { parse } from 'yaml';
+import PlainJsonToDart from './engine/converter_podo';
+import SerializableJsonToDart from './engine/converter_serializable';
 
 
 // this method is called when your extension is activated
@@ -20,8 +21,8 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('jsontodart.convertFromClipboardToFolder', async (e) => {
 			convertToDart(e.path);
 		}));
-	context.subscriptions.push
-		(vscode.commands.registerCommand('jsontodart.convertFromClipboardToFile', async (e) => {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('jsontodart.convertFromClipboardToFile', async (e) => {
 			const path = e.path.toString() as string;
 			const i = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\")) + 1;
 			convertToDart(e.path.substring(0, i), e.path.substring(i));
@@ -37,6 +38,7 @@ class JsonToDartConfig {
 	nullValueDataType: String = "dynamic";
 	nullSafety: Boolean = false;
 	copyWithMethod: Boolean = false;
+	fromListMethod: Boolean = false;
 	mergeArrayApproach: Boolean = true;
 	checkNumberAsNum: Boolean = false;
 }
@@ -50,6 +52,18 @@ async function convertToDart(folder?: string, file?: string) {
 	const jsonToDartConfig = pubspecTree?.jsonToDart ?? {
 		outputFolder: "lib"
 	};
+
+	const engine = jsonToDartConfig.engine ??
+		(await vscode.window.showQuickPick([
+			{ label: 'Legacy', description: 'Generate all method/parameter in file', target: "legacy" },
+			{ label: 'Json Serializable', description: 'Using packages/json_serializable', target: "json_serializable" },
+		], {
+			placeHolder: "Need type checking?"
+		}))?.target;
+
+	if (!engine) { return; }
+
+
 	// Display a message box to the user
 	const value = await vscode.window.showInputBox({
 		placeHolder: file || folder ? "Class Name" : "package.Class Name\n",
@@ -90,16 +104,29 @@ async function convertToDart(folder?: string, file?: string) {
 
 		const data = await vscode.env.clipboard.readText();
 		const obj = JSON.parse(data);
+		const fromListMethod = jsonToDartConfig.fromListMethod ?? true;
 		const nullSafety = jsonToDartConfig.nullSafety ?? true;
 		const mergeArrayApproach = jsonToDartConfig.mergeArrayApproach ?? false;
 		const copyWithMethod = jsonToDartConfig.copyWithMethod ?? false;
 		const nullValueDataType = jsonToDartConfig.nullValueDataType;
 		const { tabSize } = vscode.workspace.getConfiguration("editor", { languageId: "dart" });
-		const converter = new JsonToDart(tabSize, typeCheck, nullValueDataType, nullSafety);
+
+		let engineClass = PlainJsonToDart;
+		switch (engine) {
+			case "json_serializable":
+				engineClass = SerializableJsonToDart;
+				break;
+			default:
+				engineClass = PlainJsonToDart;
+		}
+		const converter = new engineClass(tabSize, typeCheck, nullValueDataType, nullSafety);
 		converter.setIncludeCopyWitMethod(copyWithMethod);
+		converter.setIncludeFromListWitMethod(fromListMethod);
 		converter.setMergeArrayApproach(mergeArrayApproach);
 		converter.setUseNum(useNum);
-		const code = converter.parse(className, obj).map(r => r.code).join("\n");
+		converter.setPackage(jsonToDartConfig.package ?? "package:json_annotation/json_annotation.dart");
+		const result = converter.parse(className, obj);
+		const code = (result[0].imports ? result[0].imports : "") + result.map(r => r.code).join("\n");
 		const file = outputFileSync(filePath, code);
 		vscode.window.showInformationMessage(`Converting done...`);
 	} catch (e) {
